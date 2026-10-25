@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 460" width="1280" height="460" role="img" aria-labelledby="title desc">
+  <title id="title">English, rewritten in Rust</title>
+  <desc id="desc">The words "English, rewritten in Rust" beside a terminal where englishc reports error E0001 on "They was right about Rust." and then fixes it to "They were right about Rust."</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d0e12"/>
+      <stop offset="1" stop-color="#18100d"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f26b3a" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#f26b3a" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#ffffff" fill-opacity="0.06"/>
+    </pattern>
+    <clipPath id="card"><rect width="1280" height="460" rx="20"/></clipPath>
+  </defs>
+  <style>
+    text { font-family: ui-monospace, SFMono-Regular, 'JetBrains Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace; font-size: 12.5px; fill: #d7dae0; }
+    .fg { fill: #d7dae0; } .mut { fill: #7d8590; } .bold { fill: #f0f3f6; font-weight: 700; }
+    .err { fill: #ff6b6b; font-weight: 700; } .gut { fill: #6cb6ff; font-weight: 700; }
+    .ok { fill: #7ee787; font-weight: 700; } .help { fill: #56d4dd; font-weight: 700; }
+    .add { fill: #7ee787; font-weight: 700; } .del { fill: #ff8a8a; }
+    .title { font-family: Georgia, 'Times New Roman', 'DejaVu Serif', serif; font-size: 86px; fill: #f4efe9; letter-spacing: -1px; }
+    .rust { font-family: ui-monospace, SFMono-Regular, 'JetBrains Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace; font-size: 44px; font-weight: 700; fill: #f26b3a; letter-spacing: -1px; }
+    .kicker { font-size: 15px; fill: #f26b3a; fill-opacity: 0.85; }
+    .tag { font-family: -apple-system, 'Segoe UI', Inter, Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 19px; fill: #b3aca4; }
+    .pill { font-size: 13px; fill: #d7dae0; }
+    .bar { font-family: -apple-system, 'Segoe UI', Inter, Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12.5px; fill: #7d8590; }
+    .a { animation: a 11s infinite; }
+    .b { opacity: 0; animation: b 11s infinite; }
+    .squiggle { stroke-dasharray: 346; stroke-dashoffset: 346; animation: draw 11s infinite; }
+    .straight { opacity: 0; animation: b 11s infinite; }
+    .cursor { animation: blink 1.1s steps(1) infinite; }
+    @keyframes a { 0%, 52% { opacity: 1; } 56%, 96% { opacity: 0; } 100% { opacity: 1; } }
+    @keyframes b { 0%, 52% { opacity: 0; } 56%, 96% { opacity: 1; } 100% { opacity: 0; } }
+    @keyframes draw { 0%, 4% { stroke-dashoffset: 346; opacity: 1; } 14%, 52% { stroke-dashoffset: 0; opacity: 1; } 56%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+    @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .a, .b, .squiggle, .straight, .cursor { animation: none; }
+      .squiggle { stroke-dashoffset: 0; }
+    }
+  </style>
+  <g clip-path="url(#card)">
+    <rect width="1280" height="460" fill="url(#bg)"/>
+    <rect width="1280" height="460" fill="url(#dots)"/>
+    <ellipse cx="915.0" cy="230.0" rx="520" ry="300" fill="url(#glow)"/>
+    <text x="-40" y="600" style="font-family: Georgia, 'Times New Roman', 'DejaVu Serif', serif; font-size: 640px; fill: #ffffff; fill-opacity: 0.028;">Æ</text>
+  </g>
+  <rect x="0.5" y="0.5" width="1279" height="459" rx="20" fill="none" stroke="#ffffff" stroke-opacity="0.08"/>
+
+  <text class="kicker" x="62" y="100">#![forbid(bad_grammar)]</text>
+  <text class="title" x="58" y="196">English,</text>
+  <path class="squiggle" d="M64 218 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0 q 4.5 -5 9 0 q 4.5 5 9 0" fill="none" stroke="#ff6b6b" stroke-width="3" stroke-linecap="round"/>
+  <path class="straight" d="M64 218 h 306" fill="none" stroke="#7ee787" stroke-width="3" stroke-linecap="round"/>
+  <text class="rust" x="60" y="276">rewritten in Rust</text>
+  <text class="tag" x="62" y="326">Grammar is a trait bound. Pronouns are borrows.</text>
+  <text class="tag" x="62" y="354">And a compiler gives prose rustc-grade errors.</text>
+  <rect x="62" y="384" width="132" height="30" rx="15" fill="#15171c" stroke="#ffffff" stroke-opacity="0.12"/><text class="pill" x="128" y="403.5" text-anchor="middle">0 dependencies</text>
+  <rect x="204.39999999999998" y="384" width="132" height="30" rx="15" fill="#15171c" stroke="#ffffff" stroke-opacity="0.12"/><text class="pill" x="271" y="403.5" text-anchor="middle">13 error codes</text>
+  <rect x="346.79999999999995" y="384" width="110" height="30" rx="15" fill="#15171c" stroke="#ffffff" stroke-opacity="0.12"/><text class="pill" x="402" y="403.5" text-anchor="middle">stable Rust</text>
+
+  <rect x="590" y="44" width="650" height="372" rx="14" fill="#0a0b0e" fill-opacity="0.92" stroke="#ffffff" stroke-opacity="0.1"/>
+  <line x1="590" y1="80" x2="1240" y2="80" stroke="#ffffff" stroke-opacity="0.07"/>
+  <circle cx="610" cy="62" r="6" fill="#ff5f57"/>
+  <circle cx="630" cy="62" r="6" fill="#febc2e"/>
+  <circle cx="650" cy="62" r="6" fill="#28c840"/>
+  <text class="bar" x="915.0" y="66" text-anchor="middle">~/essay — englishc</text>
+    <g class="a">
+    <text x="612" y="110" xml:space="preserve"><tspan class="mut">$ </tspan><tspan class="fg">englishc essay.txt</tspan></text>
+    <text x="612" y="130" xml:space="preserve">   <tspan class="ok">Compiling</tspan><tspan class="fg"> essay.txt (english 2026)</tspan></text>
+    <text x="612" y="150" xml:space="preserve"><tspan class="err">error[E0001]</tspan><tspan class="bold">: mismatched verb form</tspan></text>
+    <text x="612" y="170" xml:space="preserve"> <tspan class="gut">--&gt;</tspan><tspan class="fg"> essay.txt:1:6</tspan></text>
+    <text x="612" y="190" xml:space="preserve"><tspan class="gut">  |</tspan></text>
+    <text x="612" y="210" xml:space="preserve"><tspan class="gut">1 |</tspan><tspan class="fg"> They was right about Rust.</tspan></text>
+    <text x="612" y="230" xml:space="preserve"><tspan class="gut">  |</tspan><tspan class="gut"> ----</tspan><tspan class="err"> ^^^ expected `were`, found `was`</tspan></text>
+    <text x="612" y="250" xml:space="preserve"><tspan class="gut">  |</tspan><tspan class="gut"> |</tspan></text>
+    <text x="612" y="270" xml:space="preserve"><tspan class="gut">  |</tspan><tspan class="gut"> `They` is plural</tspan></text>
+    <text x="612" y="290" xml:space="preserve"><tspan class="gut">  |</tspan></text>
+    <text x="612" y="310" xml:space="preserve"><tspan class="help">help</tspan><tspan class="fg">: use `were`</tspan></text>
+    <text x="612" y="330" xml:space="preserve"><tspan class="gut">  |</tspan></text>
+    <text x="612" y="350" xml:space="preserve"><tspan class="gut">1 -</tspan><tspan class="fg"> They </tspan><tspan class="del">was</tspan><tspan class="fg"> right about Rust.</tspan></text>
+    <text x="612" y="370" xml:space="preserve"><tspan class="gut">1 +</tspan><tspan class="fg"> They </tspan><tspan class="add">were</tspan><tspan class="fg"> right about Rust.</tspan></text>
+    </g>
+    <g class="b">
+    <text x="612" y="110" xml:space="preserve"><tspan class="mut">$ </tspan><tspan class="fg">englishc --fix essay.txt</tspan></text>
+    <text x="612" y="130" xml:space="preserve">       <tspan class="ok">Fixed</tspan><tspan class="fg"> essay.txt (1 fix)</tspan></text>
+    <text x="612" y="150" xml:space="preserve">   <tspan class="ok">Compiling</tspan><tspan class="fg"> essay.txt (english 2026)</tspan></text>
+    <text x="612" y="170" xml:space="preserve">    <tspan class="ok">Finished</tspan><tspan class="fg"> `proofread` profile [grammatical + spell-checked] target(s) in 0.00s</tspan></text>
+    <text x="612" y="210" xml:space="preserve"><tspan class="mut">$ </tspan><tspan class="fg">cat essay.txt</tspan></text>
+    <text x="612" y="230" xml:space="preserve"><tspan class="fg">They </tspan><tspan class="add">were</tspan><tspan class="fg"> right about Rust.</tspan></text>
+    <text x="612" y="250" xml:space="preserve"><tspan class="mut">$ </tspan></text>
+    </g>
+  <g class="b"><rect class="cursor" x="627.0" y="238" width="8" height="15" fill="#d7dae0"/></g>
+</svg>

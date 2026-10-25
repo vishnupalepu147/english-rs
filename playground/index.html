@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>English, rewritten in Rust</title>
+<style>
+  :root {
+    --bg: #fbfaf8; --fg: #1d1b19; --muted: #6b655f; --card: #ffffff; --line: #e6e1db;
+    --accent: #c4471c; --accent-soft: #fbe9e1; --term: #16181d; --term-fg: #d7dae0;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121315; --fg: #e9e6e2; --muted: #9a948d; --card: #1b1c1f; --line: #2c2d31;
+            --accent: #ef7b4f; --accent-soft: #3a2219; --term: #0c0d10; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 32px 20px 64px; }
+  header h1 { font-size: clamp(28px, 4vw, 42px); line-height: 1.1; margin: 0 0 10px; letter-spacing: -0.02em; }
+  header h1 span { color: var(--accent); }
+  .banner { display: block; width: 100%; height: auto; margin: 0 0 22px; border-radius: 16px; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  header p { margin: 0; color: var(--muted); max-width: 760px; font-size: 17px; }
+  .reply { margin: 18px 0 0; padding: 12px 16px; border-radius: 10px; background: var(--accent-soft);
+           border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+  .reply b { color: var(--accent); }
+  section { margin-top: 36px; }
+  h2 { font-size: 22px; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); margin: 0 0 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+  button, select { font: inherit; font-size: 15px; border-radius: 9px; border: 1px solid var(--line);
+                   background: var(--card); color: var(--fg); padding: 9px 14px; min-height: 42px; cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  button:disabled { opacity: .5; cursor: default; }
+  .chips { display: flex; gap: 8px; margin-left: auto; }
+  .chip { font: 600 13px/1 var(--mono); padding: 8px 10px; border-radius: 999px; border: 1px solid var(--line); }
+  .chip.err { color: #e5484d; } .chip.warn { color: #c98a00; } .chip.ok { color: #2f9e44; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  .editor { position: relative; height: 460px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--bg); }
+  .editor textarea, .editor .backdrop { position: absolute; inset: 0; margin: 0; padding: 14px 16px; border: 0;
+      font: 14.5px/1.6 var(--mono); white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; }
+  .editor textarea { width: 100%; height: 100%; resize: none; background: transparent; color: var(--fg);
+                     caret-color: var(--accent); outline: none; overflow-y: auto; }
+  .editor .backdrop { color: transparent; overflow: hidden; pointer-events: none; }
+  .editor mark { color: transparent; background: none; text-decoration: underline wavy; text-underline-offset: 4px;
+                 text-decoration-thickness: 1.5px; }
+  .editor mark.error { text-decoration-color: #e5484d; background: rgba(229,72,77,.08); }
+  .editor mark.warning { text-decoration-color: #d9a400; background: rgba(217,164,0,.08); }
+
+  .term { background: var(--term); color: var(--term-fg); border-radius: 10px; padding: 14px 16px; height: 460px;
+          overflow: auto; font: 13px/1.5 var(--mono); }
+  .term pre { margin: 0; white-space: pre; }
+  .term .prompt { color: #8b949e; margin-bottom: 8px; }
+  .diag { position: relative; padding: 8px 0 10px; border-bottom: 1px dashed #2a2e36; }
+  .diag:last-of-type { border-bottom: 0; }
+  .flag { display: inline-block; margin-top: 6px; font: 12.5px system-ui, sans-serif; padding: 5px 10px; min-height: 0;
+          background: #23262e; color: #c9d1d9; border-color: #343944; }
+  .flag.sent { color: #7ee787; border-color: #2f5a39; }
+  .err { color: #ff6b6b; font-weight: 700; } .warn { color: #f5c542; font-weight: 700; }
+  .gut { color: #6cb6ff; font-weight: 700; } .note { color: #7ee787; font-weight: 700; }
+  .help { color: #56d4dd; font-weight: 700; } .add { color: #7ee787; } .del { color: #ff8a8a; }
+  .b { font-weight: 700; color: #f0f3f6; } .ok { color: #7ee787; font-weight: 700; } .dim { color: #6e7681; }
+
+  .crate { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .tabs button[aria-selected="true"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .code { background: var(--term); color: #e6edf3; border-radius: 10px; padding: 14px 16px; font: 13.5px/1.55 var(--mono);
+          overflow-x: auto; white-space: pre; margin: 0; }
+  .code .kw { color: #ff7b72; } .code .mac { color: #d2a8ff; } .code .str { color: #a5d6ff; } .code .cm { color: #8b949e; }
+  .label { font: 600 12px/1 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 4px 0 6px; }
+  .why { margin: 4px 0 0; color: var(--muted); }
+
+  .lints { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+  .lint { text-align: left; display: block; width: 100%; padding: 12px 14px; }
+  .lint code { font: 600 13px var(--mono); }
+  .lint .e { color: #e5484d; } .lint .w { color: #c98a00; }
+  .lint small { display: block; color: var(--muted); font-size: 13.5px; margin-top: 4px; }
+  .explain { margin-top: 14px; white-space: pre-wrap; font: 14px/1.6 var(--mono); }
+
+  form label { display: block; font-weight: 600; margin: 0 0 6px; }
+  form textarea { width: 100%; min-height: 90px; font: 15px/1.5 var(--mono); padding: 12px; border-radius: 10px;
+                  border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+  .radios { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+  .radios label { font-weight: 400; display: flex; gap: 8px; align-items: center; padding: 10px 12px;
+                  border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+  .sent-note { color: var(--muted); margin-left: 10px; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 14px; }
+  code.inline { font: 0.92em var(--mono); background: color-mix(in srgb, var(--fg) 8%, transparent); padding: 1px 5px; border-radius: 5px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img class="banner" src="banner.svg" alt="">
+    <h1 class="visually-hidden">English, rewritten in Rust</h1>
+    <p>English (C edition) has shipped since about the fifth century with no type checker, raw-pointer pronouns
+      and a hand-maintained table of irregular verbs. This is the rewrite: a crate where grammar is enforced by
+      the type system, and <code class="inline">englishc</code>, a compiler that gives legacy prose rustc-grade
+      diagnostics. The playground below runs the real compiler, built to WebAssembly.</p>
+    <div class="reply" data-it-show="reply"><b>Claude:</b> <span data-it-bind="reply"></span></div>
+  </header>
+
+  <section>
+    <h2>The <code class="inline">englishc</code> playground</h2>
+    <p class="sub">Type anything. Diagnostics update as you go, and <b>Apply fixes</b> does what
+      <code class="inline">englishc --fix</code> does. If a diagnostic is wrong, press <b>Not a mistake</b> on it and I'll fix the lint.</p>
+    <div class="card">
+      <div class="toolbar">
+        <select id="sample" aria-label="Sample text">
+          <option value="essay">Sample: a summer essay</option>
+          <option value="lyrics">Sample: legacy lyrics</option>
+          <option value="pronouns">Sample: ambiguous pronouns</option>
+          <option value="clean">Sample: clean prose</option>
+          <option value="blank">Blank page</option>
+        </select>
+        <button class="primary" id="fix">Apply fixes</button>
+        <button id="undo" hidden>Undo</button>
+        <div class="chips">
+          <span class="chip err" id="n-err">0 errors</span>
+          <span class="chip warn" id="n-warn">0 warnings</span>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="editor">
+          <div class="backdrop"><div id="hl"></div></div>
+          <textarea id="src" spellcheck="false" aria-label="English source"></textarea>
+        </div>
+        <div class="term" id="term" aria-live="polite"><div class="prompt">$ englishc essay.txt</div><pre>Loading the compiler…</pre></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The <code class="inline">english</code> crate: English (Rust edition)</h2>
+    <p class="sub">Sentences are Rust tokens. The <code class="inline">english!</code> macro classifies each verb at compile
+      time and requires the subject to implement the matching trait, so bad grammar is a type error. These are real
+      rustc 1.93 messages, trimmed where marked.</p>
+    <div class="card">
+      <div class="tabs" role="tablist" id="tabs"></div>
+      <div class="crate">
+        <div><div class="label">src/main.rs</div><pre class="code" id="ex-code"></pre></div>
+        <div><div class="label">cargo build</div><pre class="code" id="ex-out"></pre></div>
+        <p class="why" id="ex-why"></p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Error index</h2>
+    <p class="sub">Every lint <code class="inline">englishc</code> knows. Pick one to read its <code class="inline">--explain</code> page.</p>
+    <div class="card">
+      <div class="lints" id="lints"></div>
+      <div class="explain" id="explain" hidden></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Teach the compiler</h2>
+    <p class="sub">Found a mistake it misses, or a correct sentence it flags? Send it to me and I'll change the compiler,
+      rebuild it, and update this page.</p>
+    <form class="card" id="teach">
+      <label for="example">The sentence</label>
+      <textarea id="example" required placeholder="e.g. Between you and I, the data are wrong."></textarea>
+      <div class="radios">
+        <label><input type="radio" name="kind" value="should_flag" checked> It has a mistake englishc misses</label>
+        <label><input type="radio" name="kind" value="should_not_flag"> It's correct, but englishc flags it</label>
+      </div>
+      <label for="notes">What's wrong with it (optional)</label>
+      <textarea id="notes" style="min-height:60px" placeholder="&quot;Between you and I&quot; should be &quot;between you and me&quot;"></textarea>
+      <div style="margin-top:12px; display:flex; align-items:center">
+        <button class="primary" type="submit">Send to Claude</button>
+        <span class="sent-note" id="teach-note"></span>
+      </div>
+    </form>
+  </section>
+
+  <footer>Built from the <code class="inline">english</code> and <code class="inline">englishc</code> crates in this project.
+    Build <span data-it-bind="build">0.1.0</span>.</footer>
+</main>
+
+<script src="englishc.wasm.js"></script>
+<script src="examples.js"></script>
+<script>
+const SAMPLES = {
+  essay: `My Summer Vacation
+
+Irregardless of the weather, me and my brother goed to the beach. He are
+a strong swimmer, but i could of beaten him. The dog chased the ball until
+it stopped. We seen a octopus, which was very unique, and it's own color
+changed. Their is nothing better then that.
+
+I don't have no regrets. It was literally the the best week ever.
+`,
+  lyrics: `I can't get no satisfaction.
+We don't need no education.
+Your the one that I want.
+Irregardless, its a beautiful day.
+`,
+  pronouns: `The trophy doesn't fit in the suitcase because it is too big.
+The councilmen refused the demonstrators a permit because they feared violence.
+The runtime will pause the future until it is ready.
+
+(The last one is a real sentence from the Rust book.)
+`,
+  clean: `Rust is a language empowering everyone to build reliable and efficient software. It has a strong type system, and its compiler catches whole classes of bugs before they ship. English has neither, which is why this tool exists.
+`,
+  blank: ``,
+};
+
+// Code and real rustc output come from examples/*.rs, compiled by build.py.
+const WHY = {
+  agreement: { tab: "Agreement", why: "The macro classifies \"don\" + 't as the base form of do and requires He: TakesBase, which He does not implement (it implements TakesS). Contractions are written \"don 't\" because, since Rust 2021, rustc reads don't as a reserved prefix and tells you to insert a space." },
+  articles: { tab: "a / an", why: "A const fn reads the noun's spelling at compile time and picks Sound<true> or Sound<false>; only An implements BeforeVowelSound. It knows about silent h (an hour), y-sounds (a unicorn) and initialisms (an MBA, a NATO summit)." },
+  case: { tab: "Case", why: "Me knows it is first-person singular, so agreement would be fine, but it does not implement Subject. In prose, englishc's E0013 catches the same mistake: \"me and my brother went\"." },
+  dangling: { tab: "Dangling pronoun", why: "In English (C edition) a pronoun is a raw pointer. Here it is a Pronoun<'a, It> holding a shared borrow of its antecedent, so the borrow checker rejects a dangling \"it\". An ambiguous one cannot be written at all, because a pronoun borrows exactly one noun. rustc suggests cloning the dog." },
+  inflection: { tab: "Inflection", why: "You only write dictionary forms. Number is a type parameter (Noun<Singular> versus Noun<Plural>), and plurals and past tenses come from the same irregular tables englishc uses to predict mistakes like \"childs\" and \"goed\"." },
+};
+const EXAMPLES = (window.EXAMPLES_OUT || []).map((e) => ({ ...e, ...(WHY[e.name] || { tab: e.name, why: "" }) }));
+
+let W = null;
+function call(fn, text) {
+  const bytes = new TextEncoder().encode(text);
+  const ptr = W.alloc(Math.max(bytes.length, 1));
+  new Uint8Array(W.memory.buffer, ptr, bytes.length).set(bytes);
+  const out = W[fn](ptr, bytes.length);
+  const result = new TextDecoder().decode(new Uint8Array(W.memory.buffer, out, W.output_len()));
+  W.dealloc(ptr, Math.max(bytes.length, 1));
+  return result;
+}
+function callNoArgs(fn) {
+  const out = W[fn]();
+  return new TextDecoder().decode(new Uint8Array(W.memory.buffer, out, W.output_len()));
+}
+
+const $ = (id) => document.getElementById(id);
+const src = $("src"), hl = $("hl"), term = $("term");
+const escape = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+let last = null, history = [];
+
+function lineAt(text, start) {
+  const a = text.lastIndexOf("\n", start - 1) + 1;
+  const b = text.indexOf("\n", start);
+  return text.slice(a, b < 0 ? text.length : b);
+}
+
+function render() {
+  if (!W) return;
+  const text = src.value;
+  const t0 = performance.now();
+  const r = JSON.parse(call("check_json", text));
+  const ms = ((performance.now() - t0) / 1000).toFixed(2);
+  last = { text, r };
+
+  // Underlines in the editor.
+  let html = "", at = 0;
+  const spans = r.diagnostics.slice().sort((a, b) => a.start - b.start);
+  for (const d of spans) {
+    if (d.start < at || d.end <= d.start) continue;
+    html += escape(text.slice(at, d.start)) + `<mark class="${d.level}">` + escape(text.slice(d.start, d.end)) + "</mark>";
+    at = d.end;
+  }
+  hl.innerHTML = html + escape(text.slice(at)) + "\n";
+
+  // The terminal.
+  let out = `<div class="prompt">$ englishc essay.txt</div><pre><span class="ok">   Compiling</span> essay.txt (english 2026)</pre>`;
+  r.diagnostics.forEach((d, i) => {
+    out += `<div class="diag"><pre>${d.html}</pre><button class="flag" data-i="${i}" type="button">Not a mistake</button></div>`;
+  });
+  if (r.summary) out += `<pre>${r.summary}</pre>`;
+  if (r.errors === 0) out += `<pre><span class="ok">    Finished</span> \`proofread\` profile [grammatical + spell-checked] target(s) in ${ms}s</pre>`;
+  term.innerHTML = out;
+
+  $("n-err").textContent = `${r.errors} error${r.errors === 1 ? "" : "s"}`;
+  $("n-warn").textContent = `${r.warnings} warning${r.warnings === 1 ? "" : "s"}`;
+  $("fix").textContent = r.fixable ? `Apply ${r.fixable} fix${r.fixable === 1 ? "" : "es"}` : "Nothing to fix";
+  $("fix").disabled = !r.fixable;
+}
+
+let timer;
+src.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(render, 90); saveDraft(); });
+src.addEventListener("scroll", () => { hl.parentElement.scrollTop = src.scrollTop; });
+$("sample").addEventListener("change", (e) => { history.push(src.value); $("undo").hidden = false; src.value = SAMPLES[e.target.value]; render(); saveDraft(); });
+$("fix").addEventListener("click", () => {
+  history.push(src.value); $("undo").hidden = false;
+  src.value = call("fix_text", src.value); render(); saveDraft();
+});
+$("undo").addEventListener("click", () => {
+  if (!history.length) return;
+  src.value = history.pop(); $("undo").hidden = !history.length; render(); saveDraft();
+});
+
+term.addEventListener("click", async (e) => {
+  const button = e.target.closest(".flag");
+  if (!button || !last) return;
+  const d = last.r.diagnostics[+button.dataset.i];
+  button.textContent = "Sending…";
+  try {
+    await It.action("false_positive", {
+      code: d.code, lint: d.lint, message: d.message,
+      line: lineAt(last.text, d.start), flagged: last.text.slice(d.start, d.end),
+    });
+    button.textContent = "Sent to Claude"; button.classList.add("sent");
+  } catch {
+    button.textContent = "Couldn't send, press again";
+  }
+});
+
+let saveTimer;
+function saveDraft() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => It.store.set("draft", src.value).catch(() => {}), 800);
+}
+
+// Crate examples.
+function highlightRust(code) {
+  return escape(code)
+    .replace(/(\/\/[^\n]*)/g, '<span class="cm">$1</span>')
+    .replace(/("(?:[^"\\]|\\.)*")/g, '<span class="str">$1</span>')
+    .replace(/\b(use|fn|let|mut|pub|struct|impl)\b/g, '<span class="kw">$1</span>')
+    .replace(/\b([a-z_]+!)/g, '<span class="mac">$1</span>');
+}
+function colorRustc(text) {
+  return text.split("\n").map((line) => {
+    const l = escape(line);
+    if (/^⋮/.test(line)) return `<span class="dim">${l}</span>`;
+    let m;
+    if ((m = l.match(/^(error(\[E\d+\])?)(:.*)$/))) return `<span class="err">${m[1]}</span><span class="b">${m[3]}</span>`;
+    if ((m = l.match(/^(help)(:.*)$/))) return `<span class="help">${m[1]}</span>${m[2]}`;
+    if ((m = l.match(/^(\s*)(--&gt;)(.*)$/))) return `${m[1]}<span class="gut">${m[2]}</span>${m[3]}`;
+    if ((m = l.match(/^(\s*)(=) (note|help)(:.*)$/))) return `${m[1]}<span class="gut">${m[2]}</span> <span class="${m[3] === "note" ? "note" : "help"}">${m[3]}</span>${m[4]}`;
+    if ((m = l.match(/^(\s*\d*\s*\|)(.*)$/))) {
+      let rest = m[2];
+      if (/^\s*\d/.test(m[1])) return `<span class="gut">${m[1]}</span>${rest}`;
+      rest = rest.replace(/(\^+)([^|]*)$/, '<span class="err">$1$2</span>')
+                 .replace(/(\++)/g, '<span class="add">$1</span>')
+                 .replace(/(-{2,}|\|)/g, '<span class="gut">$1</span>');
+      return `<span class="gut">${m[1]}</span>${rest}`;
+    }
+    if (/^\$ /.test(line)) return `<span class="dim">${l}</span>`;
+    return l;
+  }).join("\n");
+}
+const tabs = $("tabs");
+function showExample(i) {
+  [...tabs.children].forEach((b, j) => b.setAttribute("aria-selected", String(i === j)));
+  $("ex-code").innerHTML = highlightRust(EXAMPLES[i].code);
+  $("ex-out").innerHTML = colorRustc(EXAMPLES[i].out);
+  $("ex-why").textContent = EXAMPLES[i].why;
+}
+EXAMPLES.forEach((ex, i) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.role = "tab"; b.textContent = ex.tab; b.onclick = () => showExample(i);
+  tabs.appendChild(b);
+});
+showExample(0);
+
+// Teach form: one commit carries the whole submission.
+$("teach").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const example = $("example").value.trim();
+  if (!example) return;
+  It.stage("example", example);
+  It.stage("kind", document.querySelector('input[name="kind"]:checked').value);
+  It.stage("notes", $("notes").value.trim());
+  $("teach-note").textContent = "Sending…";
+  try {
+    await It.commit("teach");
+    $("teach-note").textContent = "Sent. My answer will appear at the top of the page.";
+  } catch {
+    $("teach-note").textContent = "That didn't go through. Press Send again.";
+  }
+});
+
+// Boot the compiler.
+(async () => {
+  try {
+    const bytes = Uint8Array.from(atob(ENGLISHC_WASM), (c) => c.charCodeAt(0));
+    const { instance } = await WebAssembly.instantiate(bytes, {});
+    W = instance.exports;
+    const lints = JSON.parse(callNoArgs("lints_json"));
+    $("lints").innerHTML = lints.map((l) => `<button class="lint" type="button" data-code="${l.code || ""}" data-name="${l.name}">
+        <code class="${l.level === "error" ? "e" : "w"}">${l.code ? l.code : "warning"}</code> <code>${l.name}</code>
+        <small>${escape(l.summary)}</small></button>`).join("");
+    $("lints").addEventListener("click", (e) => {
+      const b = e.target.closest(".lint"); if (!b) return;
+      const box = $("explain");
+      const text = b.dataset.code ? call("explain_code", b.dataset.code) : "";
+      box.hidden = false;
+      box.textContent = text || `${b.dataset.name} is a warning. Silence it for a whole document with a line reading #![allow(${b.dataset.name})], or for the next line with #[allow(${b.dataset.name})].`;
+      box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+    if (!src.value) src.value = SAMPLES.essay;
+    render();
+  } catch (err) {
+    term.innerHTML = `<pre class="err">Could not start the compiler: ${escape(String(err))}</pre>`;
+  }
+})();
+
+// Put back a saved draft once, when the page's state first arrives.
+let restored = false;
+It.onState(() => {
+  if (restored) return;
+  restored = true;
+  const draft = It.store.get("draft");
+  if (typeof draft === "string" && draft.length) { src.value = draft; render(); }
+});
+</script>
+</body>
+</html>
